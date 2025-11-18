@@ -2,12 +2,12 @@
 from abc import ABC
 import pandas as pandas           
 import peewee
-from peewee import fn   #QUE ES ESTO DE fn?? aiuda        
+from peewee import fn  
 from modelo_orm import db, Comuna, Barrio, TipoObra, AreaResponsable, Empresa, Etapa, TipoContratacion, FuenteFinanciamiento, Obra   
 
 #Crear clase abstracta
 class GestionarObra(ABC):
-    CSV_PATH = "observatorio-de-obras-urbanas.csv"
+    CSV_PATH = r"Camacho-Ortiz-Palmaricciotti-Medrano-Sosa\observatorio-de-obras-urbanas.csv"
     dataframe = None
 
 

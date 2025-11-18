@@ -106,7 +106,7 @@ class FuenteFinanciamiento(BaseModel):
         return self.nombre
 
 
-#TABLA PRINCIPAL- OBR (Normalizada con Foreign Keys)
+#TABLA PRINCIPAL- OBRA (Normalizada con Foreign Keys)
 
 
 class Obra(BaseModel):
