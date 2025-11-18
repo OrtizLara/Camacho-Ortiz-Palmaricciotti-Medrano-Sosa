@@ -80,7 +80,9 @@ def ejecutar_proceso_completo():
 
         # Punto 11: Iniciar Obra 
         print("\n[Punto 11] Iniciando Obra 1...")
-        destacada_1 = input("  ¿Es obra destacada? (SI/NO): ").upper() == "SI"
+        destacada_1 = input("¿Es obra destacada? (SI/NO): ").strip().upper()
+        if destacada_1 not in ["SI", "NO"]:
+            destacada_1 = "NO"  # Valor por defecto
         fecha_inicio_1 = date.today()
         fecha_fin_1 = date(2026, 12, 31)
         fuente_finan_1 = buscar_fk(FuenteFinanciamiento)

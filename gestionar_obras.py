@@ -4,10 +4,11 @@ import pandas as pandas
 import peewee
 from peewee import fn  
 from modelo_orm import db, Comuna, Barrio, TipoObra, AreaResponsable, Empresa, Etapa, TipoContratacion, FuenteFinanciamiento, Obra   
+from pathlib import Path
 
 #Crear clase abstracta
 class GestionarObra(ABC):
-    CSV_PATH = r"Camacho-Ortiz-Palmaricciotti-Medrano-Sosa\observatorio-de-obras-urbanas.csv"
+    CSV_PATH = Path(__file__).parent / "observatorio-de-obras-urbanas.csv"
     dataframe = None
 
 
@@ -80,7 +81,7 @@ class GestionarObra(ABC):
         
         df= cls.dataframe.copy()
         """
-        limpio y normalizo columnas del scv
+        limpio y normalizo columnas del csv
         uso esto para
           * homogeneizar nombres de columnas (minusculas)
           * mapear a nuestras claves internas
@@ -350,20 +351,12 @@ class GestionarObra(ABC):
 #F Crea una nueva instancia de Obra desde la terminal.
     @classmethod
     def nueva_obra(cls):
-        
         print("\n--- (f) Creación de Nueva Obra ---")
         try:
-            # Pedir nombre (dato principal)
+            # 1. Pedir nombre
             nombre_obra = input("Ingrese el nombre de la nueva obra: ")
-            nueva_obra_obj = Obra(nombre=nombre_obra)
             
-            # 2. Pedir datos para `nuevo_proyecto()` (Punto 8)
-            print("Paso 1: Definición del Proyecto")
-            
-            # (Punto 8)[cite_start]: Etapa "Proyecto" [cite: 51]
-            etapa_proyecto, _ = Etapa.get_or_create(nombre="Proyecto")
-            
-            # (Punto 8)[cite_start]: Buscar FKs existentes [cite: 52]
+            # 2. Buscar FKs existentes (Punto 8)
             print("Buscando Tipo de Obra...")
             tipo_obra_fk = cls._buscar_fk(TipoObra)
             
@@ -372,27 +365,23 @@ class GestionarObra(ABC):
             
             print("Buscando Barrio...")
             barrio_fk = cls._buscar_fk(Barrio)
-
-            # 3. Invocar a `nuevo_proyecto()` (método de instancia de Obra)
-            # (Asumiendo que `nuevo_proyecto` fue ajustado para aceptar args)
-            nueva_obra_obj.nuevo_proyecto(
-                etapa_proyecto=etapa_proyecto,
+            
+            # 3. Crear la obra con los valores (usando Model.create())
+            nueva_obra_obj = Obra.create(
+                nombre=nombre_obra,
                 tipo_obra=tipo_obra_fk,
                 area_responsable=area_fk,
                 barrio=barrio_fk
             )
-            # El método .save() está DENTRO de nuevo_proyecto()
-            # [cite_start]según el modelo que me pasaste. [cite: 33]
             
-            print(f"F) Obra '{nombre_obra}' creada con ID: {nueva_obra_obj.id}")
+            # 4. Llamar a nuevo_proyecto() SIN parámetros
+            nueva_obra_obj.nuevo_proyecto()
             
-            return nueva_obra_obj # Retornar la nueva instancia [cite: 34]
-
-        except KeyboardInterrupt:
-            print("\n Creación de obra cancelada por el usuario.")
-            return None
+            print(f"Obra '{nombre_obra}' creada con ID: {nueva_obra_obj.id}")
+            return nueva_obra_obj
+            
         except Exception as e:
-            print(f"\n Error durante la creación de la nueva obra: {e}")
+            print(f"Error: {e}")
             return None
 
 

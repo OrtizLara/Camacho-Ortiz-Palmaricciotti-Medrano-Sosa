@@ -216,14 +216,12 @@ class Obra(BaseModel):
     
 
     #MÉTODOS DE INSTANCIA - Gestión del ciclo de vida de la obra
-    def nuevo_proyecto(self, etapa_proyecto, tipo_obra, area_responsable, barrio):
-        """Asigna los valores iniciales para un nuevo proyecto."""
+    def nuevo_proyecto(self):
+        """Inicia una nueva obra en etapa 'Proyecto'"""
+        etapa_proyecto, _ = Etapa.get_or_create(nombre="Proyecto")
         self.etapa = etapa_proyecto
-        self.tipo_obra = tipo_obra
-        self.area_responsable = area_responsable
-        self.barrio = barrio
-        self.save() # (o donde tengas el save)
-        print(f"✓ Obra '{self.nombre}' iniciada en etapa {etapa_proyecto.nombre}")
+        self.save()
+        print(f"✓ Obra '{self.nombre}' iniciada en etapa Proyecto")
     
     def iniciar_contratacion(self, tipo_contratacion, nro_contratacion):
         """
