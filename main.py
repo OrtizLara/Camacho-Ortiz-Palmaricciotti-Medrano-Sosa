@@ -11,7 +11,7 @@ try:
         FuenteFinanciamiento, Obra
     )
 except ImportError as e:
-    print(f"✗ Error: No se pudo importar un módulo. {e}")
+    print(f"Error: No se pudo importar un módulo. {e}")
     print("  Asegúrate de que 'modelo_orm.py' y 'gestionar_obras.py' estén en la misma carpeta.")
     exit()
 
@@ -42,7 +42,7 @@ def ejecutar_proceso_completo():
         if Obra.select().count() == 0:
             GestionarObra.cargar_datos()
         else:
-            print("✓ (e) La base de datos ya contenía datos. Se omite la carga inicial.")
+            print("(e) La base de datos ya contenía datos. Se omite la carga inicial.")
 
         
         # --- Punto 6: Crear nuevas instancias de Obra ---
@@ -56,7 +56,7 @@ def ejecutar_proceso_completo():
         obra_2 = GestionarObra.nueva_obra()
 
         if not obra_1 or not obra_2:
-            print("✗ Error: No se pudieron crear ambas obras. Abortando.")
+            print("Error: No se pudieron crear ambas obras. Abortando.")
             return
 
         # --- Puntos 7 al 16: Gestionar Ciclo de Vida ---
@@ -128,16 +128,16 @@ def ejecutar_proceso_completo():
         GestionarObra.obtener_indicadores()
 
     except peewee.OperationalError as e:
-        print(f"\n✗ ERROR DE BASE DE DATOS: {e}")
+        print(f"\nERROR DE BASE DE DATOS: {e}")
     except FileNotFoundError as e:
-        print(f"\n✗ ERROR DE ARCHIVO: {e}")
+        print(f"\nERROR DE ARCHIVO: {e}")
     except Exception as e:
-        print(f"\n✗ ERROR INESPERADO: {e}")
+        print(f"\nERROR INESPERADO: {e}")
     finally:
         if not db.is_closed():
             db.close()
             print("\n--- FIN DEL PROYECTO ---")
-            print("✓ Conexión a la base de datos cerrada.")
+            print("Conexión a la base de datos cerrada.")
 
 # --- Punto de Entrada Principal ---
 if __name__ == "__main__":

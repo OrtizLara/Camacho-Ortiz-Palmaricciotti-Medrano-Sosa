@@ -153,6 +153,8 @@ class GestionarObra(ABC):
                     # Estandariza "en ejecución" -> "En Ejecución"
                     # # Reemplaza el texto "None" si existe
                 )
+                if col == 'barrio':
+                    df[col] = df[col].str.replace("Monserrat", "Montserrat", case=False)
                 df[col] = df[col].str.normalize('NFD').str.encode('ascii', 'ignore').str.decode('utf-8')
                 df[col] = df[col].str.replace("Secretari A", "Secretaria", case=False)
                 df[col] = df[col].str.replace(r'\s+', ' ', regex=True)
@@ -327,6 +329,12 @@ class GestionarObra(ABC):
 #Helper para buscar y validar un Foreign Key por teclado.
     @classmethod
     def _buscar_fk(cls, Modelo, campo_busqueda='nombre'):
+        """
+        Helper robusto para buscar Foreign Keys.
+        1. Intenta búsqueda EXACTA (case-insensitive).
+        2. Si falla, intenta búsqueda PARCIAL (ilike).
+        3. Maneja ambigüedad.
+        """
         while True:
             valor_ingresado = input(f"  Ingrese {Modelo.__name__} (buscar por {campo_busqueda}): ")
             if not valor_ingresado:
@@ -334,17 +342,47 @@ class GestionarObra(ABC):
                 continue
             
             try:
-                instancia = Modelo.get(getattr(Modelo, campo_busqueda).ilike(f'%{valor_ingresado}%'))
-                print(f"  Encontrado: {instancia}")
-                return instancia
-            except peewee.DoesNotExist:
-                print(f" No se encontró '{valor_ingresado}'. Intente nuevamente.")
-                # Opcional: Mostrar 10 opciones
-                if input("    ¿Desea ver una lista de 10 opciones? (s/n): ").lower() == 's':
-                    for item in Modelo.select().limit(10): 
-                        print(f"    - {getattr(item, campo_busqueda)}")
+                # --- NIVEL 1: BÚSQUEDA EXACTA ---
+                # Priorizamos si el usuario escribió el nombre completo
+                try:
+                    # .ilike(valor) SIN comodines % busca igualdad ignorando mayúsculas
+                    coincidencia_exacta = Modelo.get(getattr(Modelo, campo_busqueda).ilike(valor_ingresado))
+                    print(f"  ✓ Encontrado: {getattr(coincidencia_exacta, campo_busqueda)}")
+                    return coincidencia_exacta
+                except peewee.DoesNotExist:
+              
+                    pass
+                
+                # --- NIVEL 2: BÚSQUEDA PARCIAL (CONTAINS) ---
+                condicion = getattr(Modelo, campo_busqueda).ilike(f'%{valor_ingresado}%')
+                query = Modelo.select().where(condicion)
+                cantidad = query.count()
+
+                if cantidad == 1:
+
+                    instancia = query.get()
+                    print(f"  ✓ Encontrado (parcial): {getattr(instancia, campo_busqueda)}")
+                    return instancia
+
+                elif cantidad > 1:
+
+                    print(f" La búsqueda '{valor_ingresado}' es ambigua ({cantidad} coincidencias).")
+                    print("  Por favor sea más específico. Ejemplos encontrados:")
+                    for item in query.limit(5):
+                        print(f"   * {getattr(item, campo_busqueda)}")
+                    # Vuelve al inicio del while para pedir input de nuevo
+                    continue
+
+                else:
+                    # Ninguno coincide
+                    print(f"  No se encontró nada similar a '{valor_ingresado}'.")
+                    if input("    ¿Desea ver una lista de opciones? (s/n): ").lower() == 's':
+                        print(f"    --- Lista de {Modelo.__name__} ---")
+                        for item in Modelo.select().limit(10): 
+                            print(f"    - {getattr(item, campo_busqueda)}")
+
             except Exception as e:
-                print(f" Error inesperado en la búsqueda: {e}")
+                print(f"  ✗ Error inesperado en la búsqueda: {e}")
                 return None
 
 
