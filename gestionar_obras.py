@@ -1,14 +1,14 @@
 """"SEGUIMOS CON EL PUNTO 4."""
 from abc import ABC
-import pandas as pandas           
+import pandas           
 import peewee
-from peewee import fn  
 from modelo_orm import db, Comuna, Barrio, TipoObra, AreaResponsable, Empresa, Etapa, TipoContratacion, FuenteFinanciamiento, Obra   
 from pathlib import Path
 
 #Crear clase abstracta
 class GestionarObra(ABC):
     CSV_PATH = Path(__file__).parent / "observatorio-de-obras-urbanas.csv"
+    #Ruta relativa para correrlo en cualquier ordenador
     dataframe = None
 
 
@@ -18,7 +18,7 @@ class GestionarObra(ABC):
         """
         leo el csv y devuelvo un DataFrame.
         * dtype=str para no pelearme con tipos raros
-        * low_memory=False para evitar warnings que dsp nos molesten
+        * low_memory=False para evitar warnings, lee todo en memoria.
         """
         """
         *intenta leer el CSV (bien)
@@ -63,6 +63,7 @@ class GestionarObra(ABC):
         """
         try:
             tablas = [Comuna, Barrio, TipoObra, AreaResponsable, Empresa, Etapa, TipoContratacion, FuenteFinanciamiento, Obra]
+            #nos falta tabla entorno, documentos,documentoid,
             db.create_tables(tablas, safe=True)
             print("(c) Mapeo ORM y creación de tablas exitosos.")
         except peewee.OperationalError as e:
@@ -347,7 +348,7 @@ class GestionarObra(ABC):
                 try:
                     # .ilike(valor) SIN comodines % busca igualdad ignorando mayúsculas
                     coincidencia_exacta = Modelo.get(getattr(Modelo, campo_busqueda).ilike(valor_ingresado))
-                    print(f"  ✓ Encontrado: {getattr(coincidencia_exacta, campo_busqueda)}")
+                    print(f"  Encontrado: {getattr(coincidencia_exacta, campo_busqueda)}")
                     return coincidencia_exacta
                 except peewee.DoesNotExist:
               
@@ -361,7 +362,7 @@ class GestionarObra(ABC):
                 if cantidad == 1:
 
                     instancia = query.get()
-                    print(f"  ✓ Encontrado (parcial): {getattr(instancia, campo_busqueda)}")
+                    print(f"  Encontrado (parcial): {getattr(instancia, campo_busqueda)}")
                     return instancia
 
                 elif cantidad > 1:
@@ -376,13 +377,13 @@ class GestionarObra(ABC):
                 else:
                     # Ninguno coincide
                     print(f"  No se encontró nada similar a '{valor_ingresado}'.")
-                    if input("    ¿Desea ver una lista de opciones? (s/n): ").lower() == 's':
+                    if input(" ¿Desea ver una lista de opciones? (s/n): ").lower() == 's':
                         print(f"    --- Lista de {Modelo.__name__} ---")
                         for item in Modelo.select().limit(10): 
                             print(f"    - {getattr(item, campo_busqueda)}")
 
             except Exception as e:
-                print(f"  ✗ Error inesperado en la búsqueda: {e}")
+                print(f" Error inesperado en la búsqueda: {e}")
                 return None
 
 

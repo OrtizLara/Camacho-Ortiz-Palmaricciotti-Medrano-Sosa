@@ -1,8 +1,12 @@
 import peewee
-from datetime import date
+import os #Para manipular rutas en este caso
 
+#Detecta el archivo obras_urbanas.db
+carpeta=os.path.dirname(os.path.abspath(__file__))
+#Construye la ruta, asi evitamos duplicar la base de datos
+ruta=os.path.join(carpeta, 'obras_urbanas.db')
 #Definir la conexión a la base de datos
-db = peewee.SqliteDatabase("obras_urbanas.db")
+db = peewee.SqliteDatabase(ruta)
 
 #CLASE BASE (BaseModel) 
 class BaseModel(peewee.Model):
@@ -221,7 +225,7 @@ class Obra(BaseModel):
         etapa_proyecto, _ = Etapa.get_or_create(nombre="Proyecto")
         self.etapa = etapa_proyecto
         self.save()
-        print(f"✓ Obra '{self.nombre}' iniciada en etapa Proyecto")
+        print(f"Obra '{self.nombre}' iniciada en etapa Proyecto")
     
     def iniciar_contratacion(self, tipo_contratacion, nro_contratacion):
         """
@@ -238,7 +242,7 @@ class Obra(BaseModel):
         etapa_licitacion, _ = Etapa.get_or_create(nombre="En Licitación")
         self.etapa = etapa_licitacion
         self.save()
-        print(f"✓ Contratación iniciada: {tipo_contratacion.nombre} - Nro: {nro_contratacion}")
+        print(f"Contratación iniciada: {tipo_contratacion.nombre} - Nro: {nro_contratacion}")
     
     def adjudicar_obra(self, empresa, nro_expediente):
         """
@@ -254,7 +258,7 @@ class Obra(BaseModel):
         etapa_adjudicada, _ = Etapa.get_or_create(nombre="Adjudicada")
         self.etapa = etapa_adjudicada
         self.save()
-        print(f"✓ Obra adjudicada a {empresa.nombre} - Exp: {nro_expediente}")
+        print(f"Obra adjudicada a {empresa.nombre} - Exp: {nro_expediente}")
     
     def iniciar_obra(self, destacada, fecha_inicio, fecha_fin_inicial, 
                      fuente_financiamiento, mano_obra):
@@ -277,7 +281,7 @@ class Obra(BaseModel):
         etapa_ejecucion, _ = Etapa.get_or_create(nombre="En Ejecución")
         self.etapa = etapa_ejecucion
         self.save()
-        print(f"✓ Obra iniciada el {fecha_inicio} con {mano_obra} trabajadores")
+        print(f" Obra iniciada el {fecha_inicio} con {mano_obra} trabajadores")
     
     def actualizar_porcentaje_avance(self, porcentaje):
         """
@@ -289,9 +293,9 @@ class Obra(BaseModel):
         if 0 <= porcentaje <= 100:
             self.porcentaje_avance = porcentaje
             self.save()
-            print(f"✓ Avance actualizado: {porcentaje}%")
+            print(f" Avance actualizado: {porcentaje}%")
         else:
-            print("✗ Error: El porcentaje debe estar entre 0 y 100")
+            print(" Error: El porcentaje debe estar entre 0 y 100")
     
     def incrementar_plazo(self, nuevos_meses):
         """
@@ -300,10 +304,13 @@ class Obra(BaseModel):
         Args:
             nuevos_meses: int (nuevo plazo total en meses)
         """
-        plazo_anterior = self.plazo_meses or 0
-        self.plazo_meses = nuevos_meses
-        self.save()
-        print(f"✓ Plazo incrementado de {plazo_anterior} a {nuevos_meses} meses")
+        if nuevos_meses >= 0:
+            plazo_anterior = self.plazo_meses if self.plazo_meses is not None else 0
+            self.plazo_meses = plazo_anterior + nuevos_meses
+            self.save()
+            print(f" Plazo incrementado de {plazo_anterior} a {nuevos_meses} meses")
+        else :
+            print("El plazo no puede ser negativo")
     
     def incrementar_mano_obra(self, nueva_cantidad):
         """
@@ -312,10 +319,17 @@ class Obra(BaseModel):
         Args:
             nueva_cantidad: int (nueva cantidad total)
         """
-        cantidad_anterior = self.mano_obra or 0
-        self.mano_obra = nueva_cantidad
-        self.save()
-        print(f"✓ Mano de obra incrementada de {cantidad_anterior} a {nueva_cantidad} trabajadores")
+        if nueva_cantidad >= 0:
+            cantidad_anterior = self.mano_obra if self.mano_obra is not None else 0 
+            """if self.mano_obra is not None:
+                cantidad_anterior = self.mano_obra
+                else:
+                    cantidad_anterior=0"""
+            self.mano_obra = cantidad_anterior + nueva_cantidad
+            self.save()
+            print(f" Mano de obra incrementada de {cantidad_anterior} a {self.mano_obra} trabajadores")
+        else:
+            print("No puede ser negativo")
     
     def finalizar_obra(self):
         """Marca la obra como finalizada con 100% de avance"""
@@ -323,11 +337,11 @@ class Obra(BaseModel):
         self.etapa = etapa_finalizada
         self.porcentaje_avance = 100
         self.save()
-        print(f"✓ Obra '{self.nombre}' FINALIZADA exitosamente")
+        print(f" Obra '{self.nombre}' FINALIZADA exitosamente")
     
     def rescindir_obra(self):
         """Rescinde/cancela la obra"""
         etapa_rescindida, _ = Etapa.get_or_create(nombre="Rescindida")
         self.etapa = etapa_rescindida
         self.save()
-        print(f"✗ Obra '{self.nombre}' RESCINDIDA")
+        print(f" Obra '{self.nombre}' RESCINDIDA")

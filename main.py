@@ -1,19 +1,41 @@
-# Este es el contenido para el archivo: main.py
-
 from datetime import date
 import peewee
+import keyboard
+import os
+
 
 # 1. Importar la clase gestora y los modelos
 try:
     from gestionar_obras import GestionarObra
-    from modelo_orm import (
-        db, Etapa, TipoContratacion, Empresa, 
-        FuenteFinanciamiento, Obra
-    )
+    from modelo_orm import *
 except ImportError as e:
     print(f"Error: No se pudo importar un módulo. {e}")
     print("  Asegúrate de que 'modelo_orm.py' y 'gestionar_obras.py' estén en la misma carpeta.")
     exit()
+
+def salida_emergencia():
+    """
+    Esta función se ejecuta INMEDIATAMENTE al presionar ESC,
+    sin importar qué esté haciendo el programa principal.
+    """
+    print("\n\n" + "="*40)
+    print(" INTERRUPCIÓN POR USUARIO (ESC)")
+    print("     Cerrando base de datos y saliendo...")
+    print("="*40)
+    
+    # Como vamos a matar el proceso bruscamente,
+    # cerramos la DB aquí manualmente para evitar corrupción.
+    try:
+        if not db.is_closed():
+            db.close()
+    except:
+        pass # Si falla, salimos igual
+
+    # os._exit(1) mata el proceso de Python inmediatamente.
+    os._exit(1)
+
+# Configurar la escucha del teclado en segundo plano
+keyboard.add_hotkey('esc', salida_emergencia)
 
 def ejecutar_proceso_completo():
     """
@@ -22,22 +44,24 @@ def ejecutar_proceso_completo():
     print("--- INICIANDO TRABAJO PRÁCTICO FINAL ---")
     
     try:
+        
         # --- PASO PREVIO: Conectar, Mapear y Cargar Datos (Puntos 2, 3, 4) ---
         print("\n--- PASO PREVIO: Cargando datos iniciales del CSV ---")
         
-        # (b) Conectar a la BD [cite: 25]
+        # (b) Conectar a la BD 
         GestionarObra.conectar_db()
         
-        # (c) Mapear ORM (crear tablas) [cite: 26]
+        # (c) Mapear ORM (crear tablas) 
         GestionarObra.mapear_orm()
         
-        # (a) Extraer datos del CSV [cite: 24]
+        # (a) Extraer datos del CSV 
         GestionarObra.extraer_datos()
         
-        # (d) Limpiar datos del DataFrame [cite: 27]
+        # (d) Limpiar datos del DataFrame 
         GestionarObra.limpiar_datos()
-        
-        # (e) Cargar datos del DataFrame en la BD [cite: 28]
+
+
+        # (e) Cargar datos del DataFrame en la BD 
         # (Se ejecuta solo si la tabla 'obra' está vacía para evitar duplicados)
         if Obra.select().count() == 0:
             GestionarObra.cargar_datos()
@@ -48,12 +72,16 @@ def ejecutar_proceso_completo():
         # --- Punto 6: Crear nuevas instancias de Obra ---
         # Se deben crear dos instancias como mínimo 
         print("\n--- Punto 6: Creación de (mínimo) 2 nuevas obras ---")
+
         
         print("\n[Creando Obra 1...]")
         obra_1 = GestionarObra.nueva_obra()
+
         
         print("\n[Creando Obra 2...]")
         obra_2 = GestionarObra.nueva_obra()
+
+
 
         if not obra_1 or not obra_2:
             print("Error: No se pudieron crear ambas obras. Abortando.")
@@ -77,6 +105,7 @@ def ejecutar_proceso_completo():
         empresa_1 = buscar_fk(Empresa)
         nro_exp_1 = input("  Ingrese Nro de Expediente: ")
         obra_1.adjudicar_obra(empresa_1, nro_exp_1)
+
 
         # Punto 11: Iniciar Obra 
         print("\n[Punto 11] Iniciando Obra 1...")
