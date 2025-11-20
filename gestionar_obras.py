@@ -393,16 +393,23 @@ class GestionarObra(ABC):
         try:
             # 1. Pedir nombre
             nombre_obra = input("Ingrese el nombre de la nueva obra: ")
+
+            if not nombre_obra:
+                print("El nombre de la Obra es obligatorio.")
+                return None
             
             # 2. Buscar FKs existentes (Punto 8)
             print("Buscando Tipo de Obra...")
             tipo_obra_fk = cls._buscar_fk(TipoObra)
+            if not tipo_obra_fk: return None
             
             print("Buscando Área Responsable...")
             area_fk = cls._buscar_fk(AreaResponsable)
+            if not area_fk: return None
             
             print("Buscando Barrio...")
             barrio_fk = cls._buscar_fk(Barrio)
+            if not barrio_fk: return None
             
             # 3. Crear la obra con los valores (usando Model.create())
             nueva_obra_obj = Obra.create(
