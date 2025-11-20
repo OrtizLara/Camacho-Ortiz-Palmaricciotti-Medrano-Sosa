@@ -37,7 +37,7 @@ class GestionarObra(ABC):
             print(f"Error inesperado al leer el CSV: {e}")
             raise
 
-    # A partir de aca tenemos la conexion y las tablas.
+    # A partir de aca tenemos la conexion y las tablas
 
 
 #Punto B conectar la base de datos!
@@ -63,7 +63,6 @@ class GestionarObra(ABC):
         """
         try:
             tablas = [Comuna, Barrio, TipoObra, AreaResponsable, Empresa, Etapa, TipoContratacion, FuenteFinanciamiento, Obra]
-            #nos falta tabla entorno, documentos,documentoid,
             db.create_tables(tablas, safe=True)
             print("(c) Mapeo ORM y creación de tablas exitosos.")
         except peewee.OperationalError as e:
@@ -94,7 +93,7 @@ class GestionarObra(ABC):
         df = df.rename(columns=str.lower)
 
         # mapping flexible csv -> nombres internos (si el dataset cambia, vamos a tener que tocar aca ) 
-        #No se que hace esto, normaliza columnas? crea una matriz?
+        
         colmap = {
             'nombre': ['nombre', 'obra', 'nombre_obra'],
             'barrio': ['barrio'],
